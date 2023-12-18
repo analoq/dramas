@@ -1,0 +1,7 @@
+[Unit]
+Description=Status email for %i
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash -c 'systemctl status %i | python /opt/dtmaas/alert_mail.py'
+Group=systemd-journal

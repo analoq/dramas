@@ -1,0 +1,62 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+ deploy:
+    needs: build
+    runs-on: [self-hosted, linux, ARM64]
+    environment: prod
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install System Dependencies
+        run: sudo apt install -y postgresql libpq-dev sox
+
+      - name: Install Python Dependencies
+        run: |
+          sudo pip install -r requirements/prod.txt
+          pip install -r requirements/dev.txt
+
+      - name: Create .env file
+        run: |
+          touch .env
+          echo MEDIA_PATH=${{ vars.MEDIA_PATH }} >> .env
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo ZONE=${{ vars.ZONE }} >> .env
+          echo EMAIL_ACCOUNT=${{ vars.EMAIL_ACCOUNT }} >> .env
+          echo EMAIL_ACCOUNT_KEY=${{ secrets.EMAIL_ACCOUNT_KEY }} >> .env
+          echo ALERT_EMAIL=${{ vars.ALERT_EMAIL }} >> .env
+          echo AZURE_CLIENT_ID=${{ vars.AZURE_CLIENT_ID }} >> .env
+          echo AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }} >> .env
+          echo AZURE_RESOURCE_GROUP=${{ vars.AZURE_RESOURCE_GROUP }} >> .env
+          echo AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }} >> .env
+          echo AZURE_TENANT_ID=${{ vars.AZURE_TENANT_ID }} >> .env
+
+      - name: Database Migrations
+        run: alembic upgrade head
+
+      - name: Copy Code
+        run: |
+          sudo mkdir -p /opt/dtmaas/media
+          sudo cp .env *.py /opt/dtmaas/
+
+      - name: Copy systemd config
+        run: sudo cp etc/* /etc/systemd/system/
+
+      - name: Restart services
+        run: |
+          sudo systemctl daemon-reload
+          sudo systemctl restart dyndns.timer
+          sudo systemctl restart dtmaas_email
+          sudo systemctl restart dtmaas_worker
