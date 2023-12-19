@@ -1,0 +1,6 @@
+python-dotenv
+sdnotify
+psycopg2
+requests
+mido
+python-rtmidi

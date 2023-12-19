@@ -1,0 +1,10 @@
+[Unit]
+Description=Dynamic DNS Updater
+After=network.target
+OnFailure=status_email@%n.service
+
+[Service]
+ExecStart=python /opt/dtmaas/dyndns.py
+
+[Install]
+WantedBy=multi-user.target

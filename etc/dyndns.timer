@@ -1,0 +1,8 @@
+[Unit]
+Description=Run dyndns.service at regular interval
+
+[Timer]
+OnUnitActiveSec=15m
+
+[Install]
+WantedBy=timers.target

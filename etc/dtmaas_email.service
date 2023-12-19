@@ -1,0 +1,18 @@
+[Unit]
+Description=DTMaaS Email Fetcher
+After=network-online.target
+Wants=network-online.target
+OnFailure=status_email@%n.service
+StartLimitBurst=5
+StartLimitIntervalSec=15
+
+[Service]
+Type=notify
+ExecStart=python /opt/dtmaas/fetch_emails.py
+ExecStopPost=/bin/bash -c 'if [ "$$EXIT_STATUS != 0" ]; then systemctl start status_email@%n.service; fi'
+Restart=always
+RestartSec=1
+WatchdogSec=1000
+
+[Install]
+WantedBy=multi-user.target

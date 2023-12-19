@@ -1,0 +1,6 @@
+alembic
+pylint
+mypy
+coverage
+types-requests
+types-psycopg2
