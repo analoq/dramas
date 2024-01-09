@@ -41,7 +41,7 @@ jobs:
           echo AZURE_TENANT_ID=${{ vars.AZURE_TENANT_ID }} >> .env
 
       - name: Create Database
-        run: psql postgres://postgres:postgres@localhost -c 'CREATE DATABASE dtmaas'
+        run: psql ${{ secrets.DATABASE_URL }} -c 'CREATE DATABASE dtmaas'
 
       - name: Database Migrations
         run: alembic upgrade head
