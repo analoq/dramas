@@ -67,10 +67,21 @@ class EmailClientTestCase(TestCase):
         attachment.set_payload(base64.b64encode(b'data'))
         msg_ok.attach(attachment)
 
+        msg_acceptable = MIMEMultipart()
+        msg_acceptable['From'] = 'Someone <foo@gmail.com>'
+        msg_acceptable['To'] = 'bar+sc55mk2@gmail.com'
+        msg_acceptable['Subject'] = 'ok'
+        attachment = MIMEText('here it is')
+        msg_acceptable.attach(attachment)
+        attachment = MIMEBase('application', 'octet-stream')
+        attachment.add_header('Content-Disposition', 'attachment', filename='mymidi.mid')
+        attachment['Content-Transfer-Encoding'] = 'base64'
+        attachment.set_payload(base64.b64encode(b'data'))
+        msg_acceptable.attach(attachment)
 
         # setup imap mock
         imap = Mock()
-        imap.search.return_value = ('OK', [b'1 2 3'])
+        imap.search.return_value = ('OK', [b'1 2 3 4'])
         def imap_fetch(message_set, message_parts):
             if message_set == b'1' and message_parts == self.HEADER_QUERY:
                 return self._msg_to_header_response(msg_nomidi, 1)
@@ -84,6 +95,10 @@ class EmailClientTestCase(TestCase):
                 return self._msg_to_header_response(msg_ok, 3)
             if message_set == b'3' and message_parts == self.BODY_QUERY:
                 return self._msg_to_body_response(msg_ok, 3)
+            if message_set == b'4' and message_parts == self.HEADER_QUERY:
+                return self._msg_to_header_response(msg_acceptable, 4)
+            if message_set == b'4' and message_parts == self.BODY_QUERY:
+                return self._msg_to_body_response(msg_acceptable, 4)
         imap.fetch.side_effect = imap_fetch
         imap.readline.side_effect = [b'+ idling\r\n', socket.timeout()]
         mock_imap.return_value = imap
@@ -93,7 +108,7 @@ class EmailClientTestCase(TestCase):
         result = list(email.req_email_midi_attachments('bogus_mailbox'))
 
         # tests
-        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result), 4)
         self.assertEqual(result[0],
             RequestEmail(
                 validation_result=RequestEmailValidationResult.NO_MIDI,
@@ -113,6 +128,15 @@ class EmailClientTestCase(TestCase):
             )
         )
         self.assertEqual(result[2],
+            RequestEmail(
+                validation_result=RequestEmailValidationResult.OK,
+                from_email='foo@gmail.com',
+                to_email='bar+sc55mk2@gmail.com',
+                midi_name='mymidi.mid',
+                midi_data=b'data'
+            )
+        )
+        self.assertEqual(result[3],
             RequestEmail(
                 validation_result=RequestEmailValidationResult.OK,
                 from_email='foo@gmail.com',
