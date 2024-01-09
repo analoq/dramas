@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          sudo pip install -r requirements/prod.txt
+          sudo pip install --break-system-packages -r requirements/prod.txt
           pip install -r requirements/dev.txt
 
       - name: Create .env file
@@ -39,6 +39,9 @@ jobs:
           echo AZURE_RESOURCE_GROUP=${{ vars.AZURE_RESOURCE_GROUP }} >> .env
           echo AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }} >> .env
           echo AZURE_TENANT_ID=${{ vars.AZURE_TENANT_ID }} >> .env
+
+      - name: Create Database
+        run: psql postgres://postgres:postgres@localhost -c 'CREATE DATABASE dtmaas'
 
       - name: Database Migrations
         run: alembic upgrade head
