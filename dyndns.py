@@ -1,6 +1,7 @@
 """Script to update Azure DNS A record with current IP address, i.e. dynamic DNS"""
 from os import environ
 from requests import Session
+from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ def req_ifconfig_ip() -> str:
         backoff_factor=1,
         status_forcelist=[503],
     )
+    session.mount('http://', HTTPAdapter(max_retries=retries))
     req = session.get('http://ifconfig.me', timeout=60)
     assert req.status_code == 200, f'returned code {req.status_code}'
     return req.text
