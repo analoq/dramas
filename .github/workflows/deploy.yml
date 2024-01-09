@@ -23,7 +23,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           sudo pip install --break-system-packages -r requirements/prod.txt
-          pip install -r requirements/dev.txt
+          pip install --break-system-packages -r requirements/dev.txt
 
       - name: Create .env file
         run: |
