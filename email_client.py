@@ -71,6 +71,7 @@ class EmailClient:
         for part in msg.walk():
             if part.get_content_type() == 'audio/midi' or \
                 (part.get_content_type() == 'application/octet-stream' and \
+                part.get_filename() is not None and \
                 part.get_filename()[-4:].lower() == '.mid'):
                 assert part.get('Content-Transfer-Encoding') in [None, 'base64']
                 payload_encoded = part.get_payload()
