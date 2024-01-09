@@ -69,7 +69,9 @@ class EmailClient:
 
     def _get_midi_attachment_from_msg(self, msg: Message) -> Tuple[Optional[str], Optional[bytes]]:
         for part in msg.walk():
-            if part.get_content_type() == 'audio/midi':
+            if part.get_content_type() == 'audio/midi' or \
+                (part.get_content_type() == 'application/octet-stream' and \
+                (part.get_filename() or '')[-4:].lower() == '.mid'):
                 assert part.get('Content-Transfer-Encoding') in [None, 'base64']
                 payload_encoded = part.get_payload()
                 assert isinstance(payload_encoded, str)

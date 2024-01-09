@@ -58,5 +58,6 @@ jobs:
         run: |
           sudo systemctl daemon-reload
           sudo systemctl restart dyndns.timer
+          sudo systemctl restart dyndns
           sudo systemctl restart dtmaas_email
           sudo systemctl restart dtmaas_worker
