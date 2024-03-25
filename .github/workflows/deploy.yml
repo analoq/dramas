@@ -57,6 +57,9 @@ jobs:
       - name: Restart services
         run: |
           sudo systemctl daemon-reload
+          sudo systemctl enable dyndns.timer
+          sudo systemctl enable dtmaas_email
+          sudo systemctl enable dtmaas_worker
           sudo systemctl restart dyndns.timer
           sudo systemctl restart dyndns
           sudo systemctl restart dtmaas_email
